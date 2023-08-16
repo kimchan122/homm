@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
+import { ThemeProvider } from 'styled-components'
+import { ThorinGlobalStyles, lightTheme } from '@ensdomains/thorin'
+import { Button, LockSVG } from '@ensdomains/thorin';
 
 function ENSPage() {
     const [ethereumAddress, setEthereumAddress] = useState('');
@@ -33,7 +36,16 @@ function ENSPage() {
         <div>
             <h1>ENS Practice</h1>
             <p>Ethereum Address: {ethereumAddress}</p>
+            <div style={{ width: '180px' }}>
+                <ThemeProvider theme={lightTheme}>
+                    <ThorinGlobalStyles />
+                    <Button prefix={<LockSVG />} variant="primary">
+                        Connect Wallet
+                    </Button>
+                </ThemeProvider >
+            </div>
         </div>
+
     );
 }
 
