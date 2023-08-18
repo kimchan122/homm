@@ -47,6 +47,7 @@ const GoogleMapComponent = () => {
     };
 
     const handleApiLoaded = (props: GoogleApiProps) => {
+        console.log("apiloaded");
         const { map, maps } = props;
         setMapApi(maps);
         setMapInstance(map);
@@ -54,7 +55,7 @@ const GoogleMapComponent = () => {
 
 
     useEffect(() => {
-        fetch('/geojson/gadm41_VNM_2.json')
+        fetch('/geojson/TPHCM_subarea.geojson')
             .then(response => response.json())
             .then(data => setGeoData(data));
     }, []);
@@ -62,16 +63,26 @@ const GoogleMapComponent = () => {
     useEffect(() => {
         if (mapApi && mapInstance && geoData) {
             geoData.features.forEach(feature => {
-                if (feature.geometry.type === 'Polygon') {
+                // if (feature.geometry.type === 'MultiPolygon') {
+                feature.geometry.coordinates.forEach(polygonCoords => {
+                    // console.log(polygonCoords);
+                    // console.log(JSON.stringify(polygonCoords[0]));
+                    // const formattedCoords = polygonCoords.map(coord => ({ lat: coord[1], lng: coord[0] }));
+
+                    // const formattedCoords = polygonCoords[0].map((coord: [number, number]) => ({ lat: coord[1], lng: coord[0] }));
+
+                    const formattedCoords = polygonCoords[0].map(coord => ({ lat: coord[1], lng: coord[0] }));
+                    // console.log(formattedCoords);
                     const polygon = new mapApi.Polygon({
-                        paths: feature.geometry.coordinates[0].map(coord => ({ lat: coord[1], lng: coord[0] })),
+                        paths: formattedCoords,
                         fillColor: '#FF0000',
                         fillOpacity: 0.35,
                         strokeColor: '#FF0000',
                         strokeWeight: 2,
                     });
                     polygon.setMap(mapInstance);
-                }
+                });
+                // }
             });
         }
     }, [mapApi, mapInstance, geoData]);
