@@ -1,20 +1,17 @@
 import React from 'react';
-// import Head from 'next/head';
-// import Link fro/m 'next/link';
+import Header from '../components/Header';
 import GoogleMapComponent from '../components/GoogleMap';
 
 export default function Home() {
     return (
         <div className="flex flex-col h-screen">
-            <header className="header">
-                <h1>Header</h1>
-            </header>
+            <Header />
             <div className="flex-1 overflow-hidden">
                 <GoogleMapComponent />
             </div>
-            <footer className="footer">
+            {/* <footer className="footer">
                 <p>Footer</p>
-            </footer>
+            </footer> */}
         </div>
     );
 }
