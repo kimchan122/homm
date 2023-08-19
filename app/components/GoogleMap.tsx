@@ -74,9 +74,9 @@ const GoogleMapComponent = () => {
                     const polygon = new mapApi.Polygon({
                         paths: formattedCoords,
                         fillColor: '#FF0000',
-                        fillOpacity: 0.35,
+                        fillOpacity: 0.2,
                         strokeColor: '#FF0000',
-                        strokeWeight: 2,
+                        strokeWeight: 1,
                     });
                     polygon.setMap(mapInstance);
                     newDrawnPolygons.push(polygon);
@@ -126,7 +126,7 @@ const GoogleMapComponent = () => {
                 <hr />
                 <button onClick={handleZoomOut}><FontAwesomeIcon icon={faMinus} /></button>
             </div>
-            <div ref={tooltipRef} className="tooltip" style={{ position: 'absolute', display: 'none', height: '30px', zIndex: 100 }} />
+            <div ref={tooltipRef} className="tooltip" style={{ position: 'absolute', display: 'none', height: '30px', zIndex: 100, overflow: 'hidden' }} />
         </div>
     );
 };
