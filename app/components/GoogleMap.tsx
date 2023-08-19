@@ -28,13 +28,15 @@ const center = {
 const GoogleMapComponent = () => {
     const [zoomLevel, setZoomLevel] = useState(10);
     const [geoData, setGeoData] = useState<GeoJSONPolygon | null>(null);
+    const [subGeoData, setSubGeoData] = useState<GeoJSONPolygon | null>(null);
     const [mapApi, setMapApi] = useState<typeof google.maps | null>(null);
     const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
     const [drawnPolygons, setDrawnPolygons] = useState<google.maps.Polygon[]>([]);
+    const [drawnSubareaPolygons, setDrawnSubareaPolygons] = useState<google.maps.Polygon[]>([]);
+    const [isMainPolygonsVisible, setIsMainPolygonsVisible] = useState(true);
     const [tooltip, setTooltip] = useState<{ content: string; position: { top: number; left: number; }; } | null>(null);
 
     const tooltipRef = useRef<HTMLDivElement | null>(null);
-
 
     const mapOptions = {
         disableDefaultUI: true,
@@ -55,11 +57,54 @@ const GoogleMapComponent = () => {
         setMapInstance(map);
     };
 
+    const drawSubareaPolygons = (districtName: string) => {
+        if (!mapApi || !mapInstance || !subGeoData) return;
+
+        const filteredFeatures = subGeoData.features.filter(feature => {
+            return feature.properties.NAME_2 === districtName;
+        });
+
+        console.log(`Found ${filteredFeatures.length} subareas for ${districtName}`);
+
+        const newDrawnSubareaPolygons: google.maps.Polygon[] = [];
+
+        filteredFeatures.forEach(feature => {
+            feature.geometry.coordinates.forEach(polygonCoords => {
+                polygonCoords.forEach(singlePolygonCoords => {
+                    const formattedCoords = singlePolygonCoords.map(coord => ({ lat: coord[1], lng: coord[0] }));
+                    const polygon = new mapApi.Polygon({
+                        paths: formattedCoords,
+                        fillColor: '#00FF00',
+                        fillOpacity: 0.35,
+                        strokeColor: '#00FF00',
+                        strokeWeight: 2,
+                    });
+                    polygon.setMap(mapInstance);
+                    newDrawnSubareaPolygons.push(polygon);
+                });
+            });
+        });
+
+        setDrawnSubareaPolygons(newDrawnSubareaPolygons);
+    };
+
+    const clearSubareaPolygons = () => {
+        drawnSubareaPolygons.forEach(polygon => polygon.setMap(null));
+        setDrawnSubareaPolygons([]);
+    };
+
+
     useEffect(() => {
         fetch('/geojson/TPHCM_subarea.geojson')
             .then(response => response.json())
             .then(data => setGeoData(data));
     }, []);
+
+    useEffect(() => {
+        fetch('/geojson/TPHCM_subarea_subarea.geojson')
+            .then(response => response.json())
+            .then(data => setSubGeoData(data));
+    })
 
     useEffect(() => {
         if (mapApi && mapInstance && geoData) {
@@ -74,20 +119,43 @@ const GoogleMapComponent = () => {
                     const polygon = new mapApi.Polygon({
                         paths: formattedCoords,
                         fillColor: '#FF0000',
-                        fillOpacity: 0.2,
+                        fillOpacity: 0.1,
                         strokeColor: '#FF0000',
                         strokeWeight: 1,
                     });
-                    polygon.setMap(mapInstance);
+                    if (isMainPolygonsVisible) {
+                        polygon.setMap(mapInstance);
+                    }
                     newDrawnPolygons.push(polygon);
+
+                    polygon.addListener('click', (e) => {
+                        setIsMainPolygonsVisible(false);
+                        const bounds = new google.maps.LatLngBounds();
+
+                        const selectedDistrictName = feature.properties.NAME_2;
+
+                        drawnPolygons.forEach(p => {
+                            p.setOptions({ fillOpacity: 0, strokeOpacity: 0, clickable: false });
+                        });
+
+                        clearSubareaPolygons();
+                        drawSubareaPolygons(selectedDistrictName);
+
+                        polygon.getPath().forEach((point) => {
+                            bounds.extend(point);
+                        });
+                        mapInstance.fitBounds(bounds);
+                    });
+
                     polygon.addListener('mouseover', (e) => {
+                        polygon.setOptions({ fillOpacity: 0.3 });
                         const point = new google.maps.LatLng(e.latLng.lat(), e.latLng.lng());
                         const worldPoint = mapInstance.getProjection().fromLatLngToPoint(point);
                     });
 
                     polygon.addListener('mousemove', (e) => {
                         if (tooltipRef.current) {
-                            tooltipRef.current.style.top = `${e.domEvent.clientY + 35}px`;
+                            tooltipRef.current.style.top = `${e.domEvent.clientY + 30}px`;
                             tooltipRef.current.style.left = `${e.domEvent.clientX + 5}px`;
                             tooltipRef.current.textContent = feature.properties.VARNAME_2;
                             tooltipRef.current.style.backgroundColor = 'white';
@@ -103,6 +171,7 @@ const GoogleMapComponent = () => {
                     });
 
                     polygon.addListener('mouseout', () => {
+                        polygon.setOptions({ fillOpacity: 0.1 });
                         if (tooltipRef.current) {
                             tooltipRef.current.style.display = 'none';
                         }
@@ -112,7 +181,7 @@ const GoogleMapComponent = () => {
 
             setDrawnPolygons(newDrawnPolygons);
         }
-    }, [mapApi, mapInstance, geoData]);
+    }, [mapApi, mapInstance, geoData, isMainPolygonsVisible]);
 
     return (
         <div style={{ height: '100%', width: '100%', overflow: 'hidden' }}>
