@@ -1,3 +1,4 @@
+// from 'ENS Frontend Examples'
 import { Button, Profile, mq } from '@ensdomains/thorin'
 import { ConnectButton as ConnectButtonBase } from '@rainbow-me/rainbowkit'
 import { useDisconnect } from 'wagmi'
