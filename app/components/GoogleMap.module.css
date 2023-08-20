@@ -29,3 +29,27 @@
     width: 30px;
     border: 1px solid #dfdfdf
 }
+
+.backButton {
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    background-color: #f0f0f0;
+    border: 1px solid #bfbfbf;
+    z-index: 10;
+    align-items: center;
+}
+
+.levelControls {
+    position: absolute;
+    top: 50px;
+    right: 50%;
+    display: flex;
+    flex-direction: column;
+    background-color: #f0f0f0;
+    border: 1px solid #bfbfbf;
+    z-index: 10;
+    align-items: center;
+}

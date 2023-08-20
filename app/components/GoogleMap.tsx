@@ -34,7 +34,10 @@ const GoogleMapComponent = () => {
     const [drawnPolygons, setDrawnPolygons] = useState<google.maps.Polygon[]>([]);
     const [drawnSubareaPolygons, setDrawnSubareaPolygons] = useState<google.maps.Polygon[]>([]);
     const [isMainPolygonsVisible, setIsMainPolygonsVisible] = useState(true);
-    const [tooltip, setTooltip] = useState<{ content: string; position: { top: number; left: number; }; } | null>(null);
+    const [currentLevel, setCurrentLevel] = useState<'main' | 'subarea' | 'subsubarea'>('main');
+    const [lastSelectedMainAreaName, setLastSelectedMainAreaName] = useState<string | null>(null);
+    const [lastSelectedSubAreaName, setLastSelectedSubAreaName] = useState<string | null>(null);
+
 
     const tooltipRef = useRef<HTMLDivElement | null>(null);
 
@@ -44,11 +47,11 @@ const GoogleMapComponent = () => {
     };
 
     const handleZoomIn = () => {
-        setZoomLevel(prevZoom => prevZoom + 0.1);
+        setZoomLevel(prevZoom => prevZoom + 1);
     };
 
     const handleZoomOut = () => {
-        setZoomLevel(prevZoom => prevZoom - 0.1);
+        setZoomLevel(prevZoom => prevZoom - 1);
     };
 
     const handleApiLoaded = (props: GoogleApiProps) => {
@@ -59,6 +62,10 @@ const GoogleMapComponent = () => {
 
     const drawSubareaPolygons = (districtName: string) => {
         if (!mapApi || !mapInstance || !subGeoData) return;
+
+        clearSubareaPolygons();
+
+        console.log(districtName);
 
         const filteredFeatures = subGeoData.features.filter(feature => {
             return feature.properties.NAME_2 === districtName;
@@ -81,18 +88,158 @@ const GoogleMapComponent = () => {
                     });
                     polygon.setMap(mapInstance);
                     newDrawnSubareaPolygons.push(polygon);
+
+                    polygon.addListener('click', () => {
+                        handleSubareaClick(feature);
+                        const selectedVarName = feature.properties.VARNAME_3;
+                        setLastSelectedSubAreaName(selectedVarName);
+                    });
+
+                    polygon.addListener('mousemove', (e) => {
+                        if (tooltipRef.current) {
+                            tooltipRef.current.style.top = `${e.domEvent.clientY + 30}px`;
+                            tooltipRef.current.style.left = `${e.domEvent.clientX + 5}px`;
+                            tooltipRef.current.textContent = feature.properties.VARNAME_3;
+                            tooltipRef.current.style.backgroundColor = 'white';
+                            tooltipRef.current.style.border = '1px solid black';
+                            tooltipRef.current.style.display = 'flex';
+                            tooltipRef.current.style.alignItems = 'center';
+                            tooltipRef.current.style.color = 'black';
+                            tooltipRef.current.style.padding = '5px 10px 5px 10px';
+                            tooltipRef.current.style.borderRadius = '5px';
+                            tooltipRef.current.style.border = 'none';
+                            tooltipRef.current.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.1)';
+                        }
+                    });
+
+                    polygon.addListener('mouseout', () => {
+                        if (tooltipRef.current) {
+                            tooltipRef.current.style.display = 'none';
+                        }
+                    });
                 });
             });
         });
-
         setDrawnSubareaPolygons(newDrawnSubareaPolygons);
     };
 
     const clearSubareaPolygons = () => {
-        drawnSubareaPolygons.forEach(polygon => polygon.setMap(null));
-        setDrawnSubareaPolygons([]);
+        console.log("Clearing", drawnSubareaPolygons.length, "subarea polygons");
+        drawnSubareaPolygons.forEach(polygon => {
+            polygon.setMap(null);
+            console.log("Polygon map after setting to null:", polygon.getMap());
+        });
+        setDrawnSubareaPolygons(prevPolygons => {
+            prevPolygons.forEach(polygon => {
+                polygon.setMap(null);
+            });
+            return [];
+        });
     };
 
+    const handleSubareaClick = (feature) => {
+        const bounds = new google.maps.LatLngBounds();
+        console.log('Coordinates:', feature.geometry.coordinates);
+        feature.geometry.coordinates.forEach(multiPolygonCoords => {
+            multiPolygonCoords.forEach(polygonCoords => {
+                polygonCoords.forEach(coord => {
+                    const lat = coord[1];
+                    const lng = coord[0];
+                    bounds.extend({ lat: lat, lng: lng });
+                });
+            });
+        });
+        mapInstance.fitBounds(bounds);
+
+        setCurrentLevel('subsubarea');
+
+        clearSubareaPolygons();
+        drawSpecificSubarea(feature);
+    }
+
+    const drawSpecificSubarea = (feature) => {
+        console.log("drawSpecificSubarea");
+
+        console.log(drawnPolygons);
+        console.log(drawnSubareaPolygons);
+
+        if (!mapApi || !mapInstance) return;
+
+        const newDrawnSubareaPolygon: google.maps.Polygon[] = [];
+
+        feature.geometry.coordinates.forEach(multiPolygonCoords => {
+            multiPolygonCoords.forEach(polygonCoords => {
+                const formattedCoords = polygonCoords.map(coord => ({ lat: coord[1], lng: coord[0] }));
+                const polygon = new mapApi.Polygon({
+                    paths: formattedCoords,
+                    fillColor: '#00FF00',
+                    fillOpacity: 0.35,
+                    strokeColor: '#00FF00',
+                    strokeWeight: 2,
+                });
+                polygon.setMap(mapInstance);
+                newDrawnSubareaPolygon.push(polygon);
+            });
+        });
+
+        setDrawnSubareaPolygons(newDrawnSubareaPolygon);
+    }
+
+    const handleBack = () => {
+        if (currentLevel === 'subsubarea') {
+            handleMainAreaButtonClick();
+            // setDrawnSubareaPolygons([]);
+            // drawSubareaPolygons(lastSelectedMainAreaName);
+            // setCurrentLevel('subarea');
+        } else if (currentLevel === 'subarea') {
+            handleMainButtonClick();
+            // setDrawnSubareaPolygons([]);
+            // setCurrentLevel('main');
+        }
+    }
+
+    const handleMainButtonClick = () => {
+        setCurrentLevel('main');
+        setLastSelectedMainAreaName(null);
+        setLastSelectedSubAreaName(null);
+        setIsMainPolygonsVisible(true);
+        clearSubareaPolygons();
+        if (mapInstance) {
+            mapInstance.setZoom(10);
+            mapInstance.setCenter(center);
+        }
+    }
+
+    const handleMainAreaButtonClick = () => {
+        setCurrentLevel('subarea');
+        setLastSelectedSubAreaName(null);
+        clearSubareaPolygons();
+
+        if (lastSelectedMainAreaName && geoData) {
+            const selectedMainAreaFeature = geoData.features.find(feature => feature.properties.VARNAME_2 === lastSelectedMainAreaName);
+            if (selectedMainAreaFeature) {
+                const correspondingName2 = selectedMainAreaFeature.properties.NAME_2;
+                fitMapToBounds(selectedMainAreaFeature);
+                drawSubareaPolygons(correspondingName2);
+            }
+        }
+    };
+
+    const fitMapToBounds = (feature) => {
+        const bounds = new google.maps.LatLngBounds();
+        feature.geometry.coordinates.forEach(multiPolygonCoords => {
+            multiPolygonCoords.forEach(polygonCoords => {
+                polygonCoords.forEach(coord => {
+                    const lat = coord[1];
+                    const lng = coord[0];
+                    bounds.extend({ lat: lat, lng: lng });
+                });
+            });
+        });
+        if (mapInstance) {
+            mapInstance.fitBounds(bounds);
+        }
+    };
 
     useEffect(() => {
         fetch('/geojson/TPHCM_subarea.geojson')
@@ -104,7 +251,13 @@ const GoogleMapComponent = () => {
         fetch('/geojson/TPHCM_subarea_subarea.geojson')
             .then(response => response.json())
             .then(data => setSubGeoData(data));
-    })
+    }, []);
+
+    useEffect(() => {
+        console.log("Current Level: " + currentLevel);
+        console.log(lastSelectedMainAreaName);
+        console.log(lastSelectedSubAreaName);
+    }, [currentLevel]);
 
     useEffect(() => {
         if (mapApi && mapInstance && geoData) {
@@ -133,6 +286,7 @@ const GoogleMapComponent = () => {
                         const bounds = new google.maps.LatLngBounds();
 
                         const selectedDistrictName = feature.properties.NAME_2;
+                        const selectedVarName = feature.properties.VARNAME_2;
 
                         drawnPolygons.forEach(p => {
                             p.setOptions({ fillOpacity: 0, strokeOpacity: 0, clickable: false });
@@ -140,6 +294,8 @@ const GoogleMapComponent = () => {
 
                         clearSubareaPolygons();
                         drawSubareaPolygons(selectedDistrictName);
+                        setLastSelectedMainAreaName(selectedVarName);
+                        setCurrentLevel('subarea');
 
                         polygon.getPath().forEach((point) => {
                             bounds.extend(point);
@@ -194,12 +350,27 @@ const GoogleMapComponent = () => {
                 onGoogleApiLoaded={handleApiLoaded}
                 yesIWantToUseGoogleMapApiInternals
             />
+
             <div className={styles.customControls}>
                 <button onClick={handleZoomIn}><FontAwesomeIcon icon={faPlus} /></button>
                 <hr />
                 <button onClick={handleZoomOut}><FontAwesomeIcon icon={faMinus} /></button>
             </div>
+
             <div ref={tooltipRef} className="tooltip" style={{ position: 'absolute', display: 'none', height: '30px', zIndex: 100, overflow: 'hidden' }} />
+
+            <div className={styles.levelControls}>
+                <button className={styles.levelButton} onClick={handleMainButtonClick}>Ho Chi Minh City</button>
+                {(currentLevel === 'subarea' || currentLevel === 'subsubarea') && lastSelectedMainAreaName && (
+                    <button className={styles.levelButton} onClick={handleMainAreaButtonClick}>{lastSelectedMainAreaName}</button>
+                )}
+                {currentLevel === 'subsubarea' && lastSelectedSubAreaName && (
+                    <button className={styles.levelButton}>{lastSelectedSubAreaName}</button>
+                )}
+            </div>
+
+            <button className={styles.backButton} onClick={handleBack}>이전</button>
+
         </div>
     );
 };
