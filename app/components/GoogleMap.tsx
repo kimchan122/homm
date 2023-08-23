@@ -78,7 +78,7 @@ const GoogleMapComponent = () => {
         filteredFeatures.forEach(feature => {
             feature.geometry.coordinates.forEach(polygonCoords => {
                 polygonCoords.forEach(singlePolygonCoords => {
-                    const formattedCoords = singlePolygonCoords.map(coord => ({ lat: coord[1], lng: coord[0] }));
+                    const formattedCoords = singlePolygonCoords.map((coord: any) => ({ lat: coord[1], lng: coord[0] }));
                     const polygon = new mapApi.Polygon({
                         paths: formattedCoords,
                         fillColor: '#FF0000',
@@ -144,7 +144,7 @@ const GoogleMapComponent = () => {
         });
     };
 
-    const handleSubareaClick = (feature) => {
+    const handleSubareaClick = (feature: any) => {
         const bounds = new google.maps.LatLngBounds();
         console.log('Coordinates:', feature.geometry.coordinates);
         feature.geometry.coordinates.forEach(multiPolygonCoords => {
@@ -164,7 +164,7 @@ const GoogleMapComponent = () => {
         drawSpecificSubarea(feature);
     }
 
-    const drawSpecificSubarea = (feature) => {
+    const drawSpecificSubarea = (feature: any) => {
         console.log("drawSpecificSubarea");
 
         console.log(drawnPolygons);
@@ -174,9 +174,9 @@ const GoogleMapComponent = () => {
 
         const newDrawnSubareaPolygon: google.maps.Polygon[] = [];
 
-        feature.geometry.coordinates.forEach(multiPolygonCoords => {
-            multiPolygonCoords.forEach(polygonCoords => {
-                const formattedCoords = polygonCoords.map(coord => ({ lat: coord[1], lng: coord[0] }));
+        feature.geometry.coordinates.forEach((multiPolygonCoords: any) => {
+            multiPolygonCoords.forEach((polygonCoords: any) => {
+                const formattedCoords = polygonCoords.map((coord: any) => ({ lat: coord[1], lng: coord[0] }));
                 const polygon = new mapApi.Polygon({
                     paths: formattedCoords,
                     fillColor: '#FF0000',
@@ -227,11 +227,11 @@ const GoogleMapComponent = () => {
         }
     };
 
-    const fitMapToBounds = (feature) => {
+    const fitMapToBounds = (feature: any) => {
         const bounds = new google.maps.LatLngBounds();
-        feature.geometry.coordinates.forEach(multiPolygonCoords => {
-            multiPolygonCoords.forEach(polygonCoords => {
-                polygonCoords.forEach(coord => {
+        feature.geometry.coordinates.forEach((multiPolygonCoords: any) => {
+            multiPolygonCoords.forEach((polygonCoords: any) => {
+                polygonCoords.forEach((coord: any) => {
                     const lat = coord[1];
                     const lng = coord[0];
                     bounds.extend({ lat: lat, lng: lng });
@@ -240,6 +240,25 @@ const GoogleMapComponent = () => {
         });
         if (mapInstance) {
             mapInstance.fitBounds(bounds);
+        }
+    };
+
+    const getButtonColorClass = (index: number) => {
+        if (currentLevel === 'subarea') {
+            if (index === 0) {
+                return styles.subareaColor;
+            }
+            else if (index === 1) {
+                return styles.defaultColor;
+            }
+        }
+        else if (currentLevel === 'subsubarea') {
+            if (index === 0) {
+                return styles.subareaColor;
+            }
+            else if (index === 1) {
+                return styles.subareaColor;
+            }
         }
     };
 
@@ -362,12 +381,24 @@ const GoogleMapComponent = () => {
             <div ref={tooltipRef} className="tooltip" style={{ position: 'absolute', display: 'none', height: '30px', zIndex: 100, overflow: 'hidden' }} />
 
             <div className={styles.levelControls}>
-                <button className={styles.levelButton} onClick={handleMainButtonClick}>Ho Chi Minh City</button>
+                <button className={`${styles.levelButton} ${getButtonColorClass(0)}`} onClick={handleMainButtonClick}>
+                    Ho Chi Minh City
+                </button>
                 {(currentLevel === 'subarea' || currentLevel === 'subsubarea') && lastSelectedMainAreaName && (
-                    <button className={styles.levelButton} onClick={handleMainAreaButtonClick}>{lastSelectedMainAreaName}</button>
+                    <>
+                        <p className={styles.levelDown}>＞</p>
+                        <button className={`${styles.levelButton} ${getButtonColorClass(1)}`} onClick={handleMainAreaButtonClick}>
+                            {lastSelectedMainAreaName}
+                        </button>
+                    </>
                 )}
                 {currentLevel === 'subsubarea' && lastSelectedSubAreaName && (
-                    <button className={styles.levelButton}>{lastSelectedSubAreaName}</button>
+                    <>
+                        <p className={styles.levelDown}>＞</p>
+                        <button className={`${styles.levelButton}`}>
+                            {lastSelectedSubAreaName}
+                        </button>
+                    </>
                 )}
             </div>
 

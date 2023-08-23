@@ -45,11 +45,43 @@
 .levelControls {
     position: absolute;
     top: 50px;
-    right: 50%;
+    left: 50%;
+    transform: translate(-50%);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     background-color: #f0f0f0;
     border: 1px solid #bfbfbf;
     z-index: 10;
     align-items: center;
+    padding: 5px 10px 5px 10px;
+    font-size: 12px;
+    border-radius: 5px;
+}
+
+.levelButton {
+    color: black;
+    transition: color 0.3s ease;
+}
+
+.levelDown {
+    color: #AAAAAA;
+    padding-left: 5px;
+    padding-right: 5px;
+    display: flex;
+}
+
+.defaultColor {
+    color: black;
+}
+
+.defaultColor:hover {
+    color: black;
+}
+
+.subareaColor {
+    color: #628fa6;
+}
+
+.subareaColor:hover {
+    color: #ff1900;
 }
