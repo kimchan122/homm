@@ -81,10 +81,10 @@ const GoogleMapComponent = () => {
                     const formattedCoords = singlePolygonCoords.map(coord => ({ lat: coord[1], lng: coord[0] }));
                     const polygon = new mapApi.Polygon({
                         paths: formattedCoords,
-                        fillColor: '#00FF00',
-                        fillOpacity: 0.35,
-                        strokeColor: '#00FF00',
-                        strokeWeight: 2,
+                        fillColor: '#FF0000',
+                        fillOpacity: 0.1,
+                        strokeColor: '#FF0000',
+                        strokeWeight: 1,
                     });
                     polygon.setMap(mapInstance);
                     newDrawnSubareaPolygons.push(polygon);
@@ -113,9 +113,16 @@ const GoogleMapComponent = () => {
                     });
 
                     polygon.addListener('mouseout', () => {
+                        polygon.setOptions({ fillOpacity: 0.1 });
                         if (tooltipRef.current) {
                             tooltipRef.current.style.display = 'none';
                         }
+                    });
+
+                    polygon.addListener('mouseover', (e) => {
+                        polygon.setOptions({ fillOpacity: 0.3 });
+                        const point = new google.maps.LatLng(e.latLng.lat(), e.latLng.lng());
+                        const worldPoint = mapInstance.getProjection().fromLatLngToPoint(point);
                     });
                 });
             });
@@ -172,10 +179,10 @@ const GoogleMapComponent = () => {
                 const formattedCoords = polygonCoords.map(coord => ({ lat: coord[1], lng: coord[0] }));
                 const polygon = new mapApi.Polygon({
                     paths: formattedCoords,
-                    fillColor: '#00FF00',
-                    fillOpacity: 0.35,
-                    strokeColor: '#00FF00',
-                    strokeWeight: 2,
+                    fillColor: '#FF0000',
+                    fillOpacity: 0.1,
+                    strokeColor: '#FF0000',
+                    strokeWeight: 1,
                 });
                 polygon.setMap(mapInstance);
                 newDrawnSubareaPolygon.push(polygon);
@@ -188,13 +195,8 @@ const GoogleMapComponent = () => {
     const handleBack = () => {
         if (currentLevel === 'subsubarea') {
             handleMainAreaButtonClick();
-            // setDrawnSubareaPolygons([]);
-            // drawSubareaPolygons(lastSelectedMainAreaName);
-            // setCurrentLevel('subarea');
         } else if (currentLevel === 'subarea') {
             handleMainButtonClick();
-            // setDrawnSubareaPolygons([]);
-            // setCurrentLevel('main');
         }
     }
 
