@@ -6,7 +6,7 @@
 
 .customControls {
     position: absolute;
-    bottom: 10px;
+    bottom: 50px;
     right: 10px;
     display: flex;
     flex-direction: column;
@@ -49,17 +49,17 @@
     transform: translate(-50%);
     display: flex;
     flex-direction: row;
-    background-color: #f0f0f0;
-    border: 1px solid #bfbfbf;
+    background-color: #ffffff;
     z-index: 10;
     align-items: center;
     padding: 5px 10px 5px 10px;
-    font-size: 12px;
-    border-radius: 5px;
+    font-size: 14px;
+    box-shadow: 0px 2px 2px 1px #888888;
 }
 
 .levelButton {
     color: black;
+    font-weight: 500;
     transition: color 0.3s ease;
 }
 
@@ -72,6 +72,7 @@
 
 .defaultColor {
     color: black;
+    font-weight: 500;
 }
 
 .defaultColor:hover {
@@ -79,9 +80,16 @@
 }
 
 .subareaColor {
+    font-weight: normal;
     color: #628fa6;
 }
 
 .subareaColor:hover {
     color: #ff1900;
+}
+
+.toggleSwitch {
+    position: absolute;
+    bottom: 100px;
+    right: 100px;
 }

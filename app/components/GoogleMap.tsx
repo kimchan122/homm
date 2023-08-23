@@ -4,6 +4,8 @@ import styles from './GoogleMap.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 
+import { Toggle } from '@ensdomains/thorin'
+
 interface GoogleApiProps {
     map: google.maps.Map;
     maps: typeof google.maps;
@@ -37,7 +39,7 @@ const GoogleMapComponent = () => {
     const [currentLevel, setCurrentLevel] = useState<'main' | 'subarea' | 'subsubarea'>('main');
     const [lastSelectedMainAreaName, setLastSelectedMainAreaName] = useState<string | null>(null);
     const [lastSelectedSubAreaName, setLastSelectedSubAreaName] = useState<string | null>(null);
-
+    const [toggleState, setToggleState] = useState<boolean>(false);
 
     const tooltipRef = useRef<HTMLDivElement | null>(null);
 
@@ -65,13 +67,13 @@ const GoogleMapComponent = () => {
 
         clearSubareaPolygons();
 
-        console.log(districtName);
+        // console.log(districtName);
 
         const filteredFeatures = subGeoData.features.filter(feature => {
             return feature.properties.NAME_2 === districtName;
         });
 
-        console.log(`Found ${filteredFeatures.length} subareas for ${districtName}`);
+        // console.log(`Found ${filteredFeatures.length} subareas for ${districtName}`);
 
         const newDrawnSubareaPolygons: google.maps.Polygon[] = [];
 
@@ -122,7 +124,7 @@ const GoogleMapComponent = () => {
                     polygon.addListener('mouseover', (e) => {
                         polygon.setOptions({ fillOpacity: 0.3 });
                         const point = new google.maps.LatLng(e.latLng.lat(), e.latLng.lng());
-                        const worldPoint = mapInstance.getProjection().fromLatLngToPoint(point);
+                        mapInstance.getProjection().fromLatLngToPoint(point);
                     });
                 });
             });
@@ -131,10 +133,10 @@ const GoogleMapComponent = () => {
     };
 
     const clearSubareaPolygons = () => {
-        console.log("Clearing", drawnSubareaPolygons.length, "subarea polygons");
+        // console.log("Clearing", drawnSubareaPolygons.length, "subarea polygons");
         drawnSubareaPolygons.forEach(polygon => {
             polygon.setMap(null);
-            console.log("Polygon map after setting to null:", polygon.getMap());
+            // console.log("Polygon map after setting to null:", polygon.getMap());
         });
         setDrawnSubareaPolygons(prevPolygons => {
             prevPolygons.forEach(polygon => {
@@ -146,10 +148,10 @@ const GoogleMapComponent = () => {
 
     const handleSubareaClick = (feature: any) => {
         const bounds = new google.maps.LatLngBounds();
-        console.log('Coordinates:', feature.geometry.coordinates);
-        feature.geometry.coordinates.forEach(multiPolygonCoords => {
-            multiPolygonCoords.forEach(polygonCoords => {
-                polygonCoords.forEach(coord => {
+        // console.log('Coordinates:', feature.geometry.coordinates);
+        feature.geometry.coordinates.forEach((multiPolygonCoords: any) => {
+            multiPolygonCoords.forEach((polygonCoords: any) => {
+                polygonCoords.forEach((coord: any) => {
                     const lat = coord[1];
                     const lng = coord[0];
                     bounds.extend({ lat: lat, lng: lng });
@@ -167,8 +169,8 @@ const GoogleMapComponent = () => {
     const drawSpecificSubarea = (feature: any) => {
         console.log("drawSpecificSubarea");
 
-        console.log(drawnPolygons);
-        console.log(drawnSubareaPolygons);
+        // console.log(drawnPolygons);
+        // console.log(drawnSubareaPolygons);
 
         if (!mapApi || !mapInstance) return;
 
@@ -262,6 +264,15 @@ const GoogleMapComponent = () => {
         }
     };
 
+    const handleToggleClick = () => {
+        // console.log(e);
+        setToggleState(!toggleState);
+    }
+
+    useEffect(() => {
+        console.log(toggleState);
+    }, [toggleState]);
+
     useEffect(() => {
         fetch('/geojson/TPHCM_subarea.geojson')
             .then(response => response.json())
@@ -274,11 +285,11 @@ const GoogleMapComponent = () => {
             .then(data => setSubGeoData(data));
     }, []);
 
-    useEffect(() => {
-        console.log("Current Level: " + currentLevel);
-        console.log(lastSelectedMainAreaName);
-        console.log(lastSelectedSubAreaName);
-    }, [currentLevel]);
+    // useEffect(() => {
+    //     console.log("Current Level: " + currentLevel);
+    //     console.log(lastSelectedMainAreaName);
+    //     console.log(lastSelectedSubAreaName);
+    // }, [currentLevel]);
 
     useEffect(() => {
         if (mapApi && mapInstance && geoData) {
@@ -289,7 +300,7 @@ const GoogleMapComponent = () => {
 
             geoData.features.forEach(feature => {
                 feature.geometry.coordinates.forEach(polygonCoords => {
-                    const formattedCoords = polygonCoords[0].map(coord => ({ lat: coord[1], lng: coord[0] }));
+                    const formattedCoords = polygonCoords[0].map((coord: any) => ({ lat: coord[1], lng: coord[0] }));
                     const polygon = new mapApi.Polygon({
                         paths: formattedCoords,
                         fillColor: '#FF0000',
@@ -327,7 +338,7 @@ const GoogleMapComponent = () => {
                     polygon.addListener('mouseover', (e) => {
                         polygon.setOptions({ fillOpacity: 0.3 });
                         const point = new google.maps.LatLng(e.latLng.lat(), e.latLng.lng());
-                        const worldPoint = mapInstance.getProjection().fromLatLngToPoint(point);
+                        mapInstance.getProjection().fromLatLngToPoint(point);
                     });
 
                     polygon.addListener('mousemove', (e) => {
@@ -403,7 +414,13 @@ const GoogleMapComponent = () => {
             </div>
 
             <button className={styles.backButton} onClick={handleBack}>이전</button>
-
+            {(currentLevel === 'subsubarea') ?
+                <div className={styles.toggleSwitch}>
+                    Edit Mode Switch: {toggleState}
+                    <Toggle size="small" onChange={() => handleToggleClick()} />
+                    State: <p>{toggleState ? "TRUE-NORMAL" : "FALSE-EDITOR"}</p>
+                </div>
+                : null}
         </div>
     );
 };
