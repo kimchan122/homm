@@ -1,5 +1,27 @@
 .Header {
+    z-index: 10;
     height: 70px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.editModeHeader {
+    z-index: 10;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #3888ff;
+}
+
+.toggleSwitch {
+    position: absolute;
+    left: 50%;
+    /* top: 10px; */
+    height: 70px;
+    transform: translateX(-50%);
+    z-index: 10;
     display: flex;
     align-items: center;
 }

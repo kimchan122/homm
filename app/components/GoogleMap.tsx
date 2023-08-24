@@ -4,8 +4,6 @@ import styles from './GoogleMap.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 
-import { Toggle } from '@ensdomains/thorin'
-
 interface GoogleApiProps {
     map: google.maps.Map;
     maps: typeof google.maps;
@@ -22,12 +20,17 @@ interface GeoJSONPolygon {
     }[];
 }
 
+interface GoogleMapProps {
+    currentLevel: 'main' | 'subarea' | 'subsubarea';
+    setCurrentLevel: React.Dispatch<React.SetStateAction<'main' | 'subarea' | 'subsubarea'>>;
+}
+
 const center = {
     lat: 10.7552928,
     lng: 106.6416093,
 };
 
-const GoogleMapComponent = () => {
+const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) => {
     const [zoomLevel, setZoomLevel] = useState(10);
     const [geoData, setGeoData] = useState<GeoJSONPolygon | null>(null);
     const [subGeoData, setSubGeoData] = useState<GeoJSONPolygon | null>(null);
@@ -36,10 +39,8 @@ const GoogleMapComponent = () => {
     const [drawnPolygons, setDrawnPolygons] = useState<google.maps.Polygon[]>([]);
     const [drawnSubareaPolygons, setDrawnSubareaPolygons] = useState<google.maps.Polygon[]>([]);
     const [isMainPolygonsVisible, setIsMainPolygonsVisible] = useState(true);
-    const [currentLevel, setCurrentLevel] = useState<'main' | 'subarea' | 'subsubarea'>('main');
     const [lastSelectedMainAreaName, setLastSelectedMainAreaName] = useState<string | null>(null);
     const [lastSelectedSubAreaName, setLastSelectedSubAreaName] = useState<string | null>(null);
-    const [toggleState, setToggleState] = useState<boolean>(false);
 
     const tooltipRef = useRef<HTMLDivElement | null>(null);
 
@@ -67,13 +68,9 @@ const GoogleMapComponent = () => {
 
         clearSubareaPolygons();
 
-        // console.log(districtName);
-
         const filteredFeatures = subGeoData.features.filter(feature => {
             return feature.properties.NAME_2 === districtName;
         });
-
-        // console.log(`Found ${filteredFeatures.length} subareas for ${districtName}`);
 
         const newDrawnSubareaPolygons: google.maps.Polygon[] = [];
 
@@ -133,10 +130,8 @@ const GoogleMapComponent = () => {
     };
 
     const clearSubareaPolygons = () => {
-        // console.log("Clearing", drawnSubareaPolygons.length, "subarea polygons");
         drawnSubareaPolygons.forEach(polygon => {
             polygon.setMap(null);
-            // console.log("Polygon map after setting to null:", polygon.getMap());
         });
         setDrawnSubareaPolygons(prevPolygons => {
             prevPolygons.forEach(polygon => {
@@ -148,7 +143,6 @@ const GoogleMapComponent = () => {
 
     const handleSubareaClick = (feature: any) => {
         const bounds = new google.maps.LatLngBounds();
-        // console.log('Coordinates:', feature.geometry.coordinates);
         feature.geometry.coordinates.forEach((multiPolygonCoords: any) => {
             multiPolygonCoords.forEach((polygonCoords: any) => {
                 polygonCoords.forEach((coord: any) => {
@@ -158,7 +152,10 @@ const GoogleMapComponent = () => {
                 });
             });
         });
-        mapInstance.fitBounds(bounds);
+        if (mapInstance) {
+            mapInstance.fitBounds(bounds);
+        }
+        // mapInstance.fitBounds(bounds);
 
         setCurrentLevel('subsubarea');
 
@@ -167,11 +164,6 @@ const GoogleMapComponent = () => {
     }
 
     const drawSpecificSubarea = (feature: any) => {
-        console.log("drawSpecificSubarea");
-
-        // console.log(drawnPolygons);
-        // console.log(drawnSubareaPolygons);
-
         if (!mapApi || !mapInstance) return;
 
         const newDrawnSubareaPolygon: google.maps.Polygon[] = [];
@@ -194,13 +186,13 @@ const GoogleMapComponent = () => {
         setDrawnSubareaPolygons(newDrawnSubareaPolygon);
     }
 
-    const handleBack = () => {
-        if (currentLevel === 'subsubarea') {
-            handleMainAreaButtonClick();
-        } else if (currentLevel === 'subarea') {
-            handleMainButtonClick();
-        }
-    }
+    // const handleBack = () => {
+    //     if (currentLevel === 'subsubarea') {
+    //         handleMainAreaButtonClick();
+    //     } else if (currentLevel === 'subarea') {
+    //         handleMainButtonClick();
+    //     }
+    // }
 
     const handleMainButtonClick = () => {
         setCurrentLevel('main');
@@ -264,32 +256,15 @@ const GoogleMapComponent = () => {
         }
     };
 
-    const handleToggleClick = () => {
-        // console.log(e);
-        setToggleState(!toggleState);
-    }
-
-    useEffect(() => {
-        console.log(toggleState);
-    }, [toggleState]);
-
     useEffect(() => {
         fetch('/geojson/TPHCM_subarea.geojson')
             .then(response => response.json())
             .then(data => setGeoData(data));
-    }, []);
 
-    useEffect(() => {
         fetch('/geojson/TPHCM_subarea_subarea.geojson')
             .then(response => response.json())
             .then(data => setSubGeoData(data));
     }, []);
-
-    // useEffect(() => {
-    //     console.log("Current Level: " + currentLevel);
-    //     console.log(lastSelectedMainAreaName);
-    //     console.log(lastSelectedSubAreaName);
-    // }, [currentLevel]);
 
     useEffect(() => {
         if (mapApi && mapInstance && geoData) {
@@ -347,7 +322,6 @@ const GoogleMapComponent = () => {
                             tooltipRef.current.style.left = `${e.domEvent.clientX + 5}px`;
                             tooltipRef.current.textContent = feature.properties.VARNAME_2;
                             tooltipRef.current.style.backgroundColor = 'white';
-                            tooltipRef.current.style.border = '1px solid black';
                             tooltipRef.current.style.display = 'flex';
                             tooltipRef.current.style.alignItems = 'center';
                             tooltipRef.current.style.color = 'black';
@@ -412,15 +386,6 @@ const GoogleMapComponent = () => {
                     </>
                 )}
             </div>
-
-            <button className={styles.backButton} onClick={handleBack}>이전</button>
-            {(currentLevel === 'subsubarea') ?
-                <div className={styles.toggleSwitch}>
-                    Edit Mode Switch: {toggleState}
-                    <Toggle size="small" onChange={() => handleToggleClick()} />
-                    State: <p>{toggleState ? "TRUE-NORMAL" : "FALSE-EDITOR"}</p>
-                </div>
-                : null}
         </div>
     );
 };
