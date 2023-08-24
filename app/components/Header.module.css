@@ -1,3 +1,5 @@
+@import url('../styles/css/satoshi.css');
+
 .Header {
     z-index: 10;
     height: 70px;
@@ -17,11 +19,23 @@
 
 .toggleSwitch {
     position: absolute;
-    left: 50%;
-    /* top: 10px; */
-    height: 70px;
-    transform: translateX(-50%);
-    z-index: 10;
+    right: 10px;
+    top: 100px;
+    padding: 3px 5px 3px 5px;
     display: flex;
     align-items: center;
+    background-color: white;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 100px 100px 100px 100px;
+    border: 1px solid #BBBBBB;
+    font-family: 'Satoshi-Regular';
+    font-size: 10px;
+    color: black;
+}
+
+.toggleSwitch p {
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: 12px;
+    font-family: 'Satoshi-Regular';
 }

@@ -1,8 +1,4 @@
-/* .google-map-container {
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-} */
+@import url('../styles/css/satoshi.css');
 
 .customControls {
     position: absolute;
@@ -20,9 +16,11 @@
     width: 38px;
     height: 38px;
     font-size: 18px;
-    /* border: none; */
     cursor: pointer;
     color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .customControls hr {
@@ -42,6 +40,14 @@
     align-items: center;
 }
 
+.levelDown{
+    color: #aeaeae;
+    font-size: 14px;
+    font-family: 'Satoshi-Bold';
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
 .levelControls {
     position: absolute;
     top: 100px;
@@ -51,28 +57,29 @@
     flex-direction: row;
     background-color: #ffffff;
     z-index: 10;
+    height: 36px;
     align-items: center;
-    padding: 5px 10px 5px 10px;
+    padding: 5px 0px 5px 0px;
+    border-radius: 100px;
     font-size: 14px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #BBBBBB;
+    font-family: 'Satoshi-Regular';
 }
 
 .levelButton {
     color: black;
     font-weight: 500;
     transition: color 0.3s ease;
-}
-
-.levelDown {
-    color: #AAAAAA;
-    padding-left: 5px;
-    padding-right: 5px;
-    display: flex;
+    height: 36px;
+    border-radius: 100px;
+    padding: 5px 10px 5px 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .defaultColor {
     color: black;
-    font-weight: 500;
+    font-family: 'Satoshi-Bold';
 }
 
 .defaultColor:hover {
@@ -80,7 +87,6 @@
 }
 
 .subareaColor {
-    font-weight: normal;
     color: #628fa6;
 }
 

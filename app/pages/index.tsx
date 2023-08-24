@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import Header from '../components/Header';
 import GoogleMapComponent from '../components/GoogleMap';
 
-import { ThemeProvider } from 'styled-components'
-import { ThorinGlobalStyles, lightTheme } from '@ensdomains/thorin'
+import { ThemeProvider } from 'styled-components';
+import { ThorinGlobalStyles, lightTheme } from '@ensdomains/thorin';
 
 export default function Home() {
     const [isToggleOn, setIsToggleOn] = useState<boolean>(false);
@@ -19,9 +19,9 @@ export default function Home() {
             <div className="flex flex-col h-screen">
                 <Header currentLevel={currentLevel} isToggleOn={isToggleOn} onToggle={handleToggle} />
                 <div className="flex-1 overflow-hidden">
-                    <GoogleMapComponent currentLevel={currentLevel} setCurrentLevel={setCurrentLevel} />
+                    <GoogleMapComponent currentLevel={currentLevel} setCurrentLevel={setCurrentLevel} isToggleOn={isToggleOn} />
                 </div>
             </div>
-        </ThemeProvider>
+        </ThemeProvider >
     );
 }

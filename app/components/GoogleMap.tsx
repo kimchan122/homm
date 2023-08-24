@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GoogleMapReact from 'google-map-react';
 import styles from './GoogleMap.module.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { PlusSVG, MinusSVG } from '@ensdomains/thorin';
+import SideComponent1 from './SideComponent1';
+import SideComponent2 from './SideComponent2';
 
 interface GoogleApiProps {
     map: google.maps.Map;
@@ -23,6 +24,7 @@ interface GeoJSONPolygon {
 interface GoogleMapProps {
     currentLevel: 'main' | 'subarea' | 'subsubarea';
     setCurrentLevel: React.Dispatch<React.SetStateAction<'main' | 'subarea' | 'subsubarea'>>;
+    isToggleOn: boolean;
 }
 
 const center = {
@@ -30,7 +32,25 @@ const center = {
     lng: 106.6416093,
 };
 
-const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) => {
+const tooltipStyles = {
+    backgroundColor: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    color: 'black',
+    padding: '5px 10px 5px 10px',
+    borderRadius: '5px',
+    border: 'none',
+    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+    fontSize: '14px',
+    fontFamily: "Satoshi-Bold"
+};
+
+const GoogleMapComponent = ({ currentLevel, setCurrentLevel, isToggleOn }: GoogleMapProps) => {
+
+    const currentLevelRef = useRef(currentLevel);
+    const isToggleOnRef = useRef(isToggleOn);
+    const tooltipRef = useRef<HTMLDivElement | null>(null);
+
     const [zoomLevel, setZoomLevel] = useState(10);
     const [geoData, setGeoData] = useState<GeoJSONPolygon | null>(null);
     const [subGeoData, setSubGeoData] = useState<GeoJSONPolygon | null>(null);
@@ -41,8 +61,8 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
     const [isMainPolygonsVisible, setIsMainPolygonsVisible] = useState(true);
     const [lastSelectedMainAreaName, setLastSelectedMainAreaName] = useState<string | null>(null);
     const [lastSelectedSubAreaName, setLastSelectedSubAreaName] = useState<string | null>(null);
-
-    const tooltipRef = useRef<HTMLDivElement | null>(null);
+    const [showSideComponent1, setShowSideComponent1] = useState(false);
+    const [showSideComponent2, setShowSideComponent2] = useState(false);
 
     const mapOptions = {
         disableDefaultUI: true,
@@ -62,6 +82,28 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
         setMapApi(maps);
         setMapInstance(map);
     };
+
+    const handlePolygonClick = () => {
+        console.log("polygon click event enter");
+        if (currentLevel === 'subsubarea' && isToggleOn) {
+            console.log("polygon click");
+            setShowSideComponent1(true);
+        }
+    }
+
+    // const handleMapClick = () => {
+    //     console.log("mapclick");
+    //     if (currentLevel === 'subsubarea' && isToggleOn) {
+    //         setShowSideComponent1(true);
+    //         // setShowSideComponent2(true);
+    //     }
+    // }
+
+    // if (mapInstance) {
+    //     mapInstance.addListener('click', (event) => {
+    //         handleMapClick();
+    //     });
+    // }
 
     const drawSubareaPolygons = (districtName: string) => {
         if (!mapApi || !mapInstance || !subGeoData) return;
@@ -89,6 +131,7 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
                     newDrawnSubareaPolygons.push(polygon);
 
                     polygon.addListener('click', () => {
+                        console.log("clickclick");
                         handleSubareaClick(feature);
                         const selectedVarName = feature.properties.VARNAME_3;
                         setLastSelectedSubAreaName(selectedVarName);
@@ -96,18 +139,10 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
 
                     polygon.addListener('mousemove', (e) => {
                         if (tooltipRef.current) {
+                            Object.assign(tooltipRef.current.style, tooltipStyles);
                             tooltipRef.current.style.top = `${e.domEvent.clientY + 30}px`;
                             tooltipRef.current.style.left = `${e.domEvent.clientX + 5}px`;
                             tooltipRef.current.textContent = feature.properties.VARNAME_3;
-                            tooltipRef.current.style.backgroundColor = 'white';
-                            tooltipRef.current.style.border = '1px solid black';
-                            tooltipRef.current.style.display = 'flex';
-                            tooltipRef.current.style.alignItems = 'center';
-                            tooltipRef.current.style.color = 'black';
-                            tooltipRef.current.style.padding = '5px 10px 5px 10px';
-                            tooltipRef.current.style.borderRadius = '5px';
-                            tooltipRef.current.style.border = 'none';
-                            tooltipRef.current.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.1)';
                         }
                     });
 
@@ -178,6 +213,19 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
                     strokeColor: '#FF0000',
                     strokeWeight: 1,
                 });
+
+                polygon.addListener('click', () => {
+                    console.log("clickclickclick");
+                    console.log(currentLevelRef.current);
+                    console.log(isToggleOnRef.current);
+                    if (currentLevelRef.current == 'subsubarea') {
+                        console.log("now");
+                    }
+                    if (isToggleOnRef.current == true) {
+                        console.log("TRUE");
+                    }
+                });
+
                 polygon.setMap(mapInstance);
                 newDrawnSubareaPolygon.push(polygon);
             });
@@ -185,14 +233,6 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
 
         setDrawnSubareaPolygons(newDrawnSubareaPolygon);
     }
-
-    // const handleBack = () => {
-    //     if (currentLevel === 'subsubarea') {
-    //         handleMainAreaButtonClick();
-    //     } else if (currentLevel === 'subarea') {
-    //         handleMainButtonClick();
-    //     }
-    // }
 
     const handleMainButtonClick = () => {
         setCurrentLevel('main');
@@ -203,6 +243,7 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
         if (mapInstance) {
             mapInstance.setZoom(10);
             mapInstance.setCenter(center);
+            fitMapToBounds(center);
         }
     }
 
@@ -222,6 +263,10 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
     };
 
     const fitMapToBounds = (feature: any) => {
+        if (!feature.geometry || !feature.geometry.coordinates) {
+            console.warn("Invalid feature geometry");
+            return;
+        }
         const bounds = new google.maps.LatLngBounds();
         feature.geometry.coordinates.forEach((multiPolygonCoords: any) => {
             multiPolygonCoords.forEach((polygonCoords: any) => {
@@ -254,7 +299,20 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
                 return styles.subareaColor;
             }
         }
+        else {
+            return styles.defaultColor;
+        }
     };
+
+    useEffect(() => {
+        console.log("currentlevel: " + currentLevel);
+        currentLevelRef.current = currentLevel;
+    }, [currentLevel]);
+
+    useEffect(() => {
+        console.log("toggle: " + isToggleOn);
+        isToggleOnRef.current = isToggleOn;
+    }, [isToggleOn]);
 
     useEffect(() => {
         fetch('/geojson/TPHCM_subarea.geojson')
@@ -318,17 +376,10 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
 
                     polygon.addListener('mousemove', (e) => {
                         if (tooltipRef.current) {
+                            Object.assign(tooltipRef.current.style, tooltipStyles);
                             tooltipRef.current.style.top = `${e.domEvent.clientY + 30}px`;
                             tooltipRef.current.style.left = `${e.domEvent.clientX + 5}px`;
                             tooltipRef.current.textContent = feature.properties.VARNAME_2;
-                            tooltipRef.current.style.backgroundColor = 'white';
-                            tooltipRef.current.style.display = 'flex';
-                            tooltipRef.current.style.alignItems = 'center';
-                            tooltipRef.current.style.color = 'black';
-                            tooltipRef.current.style.padding = '5px 10px 5px 10px';
-                            tooltipRef.current.style.borderRadius = '5px';
-                            tooltipRef.current.style.border = 'none';
-                            tooltipRef.current.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.1)';
                         }
                     });
 
@@ -345,6 +396,20 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
         }
     }, [mapApi, mapInstance, geoData, isMainPolygonsVisible]);
 
+    useEffect(() => {
+        if (mapInstance) {
+            google.maps.event.addListener(mapInstance, 'zoom_changed', () => {
+                const currentZoom = mapInstance.getZoom();
+                setZoomLevel(currentZoom);
+            });
+        }
+        return () => {
+            if (mapInstance) {
+                google.maps.event.clearListeners(mapInstance, 'zoom_changed');
+            }
+        }
+    }, [mapInstance]);
+
     return (
         <div style={{ height: '100%', width: '100%', overflow: 'hidden' }}>
             <GoogleMapReact
@@ -358,9 +423,9 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
             />
 
             <div className={styles.customControls}>
-                <button onClick={handleZoomIn}><FontAwesomeIcon icon={faPlus} /></button>
+                <button onClick={handleZoomIn}><PlusSVG /></button>
                 <hr />
-                <button onClick={handleZoomOut}><FontAwesomeIcon icon={faMinus} /></button>
+                <button onClick={handleZoomOut}><MinusSVG /></button>
             </div>
 
             <div ref={tooltipRef} className="tooltip" style={{ position: 'absolute', display: 'none', height: '30px', zIndex: 100, overflow: 'hidden' }} />
@@ -380,12 +445,14 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel }: GoogleMapProps) =
                 {currentLevel === 'subsubarea' && lastSelectedSubAreaName && (
                     <>
                         <p className={styles.levelDown}>＞</p>
-                        <button className={`${styles.levelButton}`}>
+                        <button className={`${styles.levelButton} ${styles.defaultColor}`}>
                             {lastSelectedSubAreaName}
                         </button>
                     </>
                 )}
             </div>
+            {showSideComponent1 && <SideComponent1 isVisible={showSideComponent1} />}
+            {showSideComponent2 && <SideComponent2 isVisible={showSideComponent2} />}
         </div>
     );
 };
