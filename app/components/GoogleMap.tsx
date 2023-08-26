@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import GoogleMapReact from 'google-map-react';
 import styles from './GoogleMap.module.css';
+import GoogleMapReact from 'google-map-react';
 import { PlusSVG, MinusSVG } from '@ensdomains/thorin';
+
 import SideComponent1 from './SideComponent1';
 import SideComponent2 from './SideComponent2';
 
@@ -61,7 +62,7 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel, isToggleOn }: Googl
     const [isMainPolygonsVisible, setIsMainPolygonsVisible] = useState(true);
     const [lastSelectedMainAreaName, setLastSelectedMainAreaName] = useState<string | null>(null);
     const [lastSelectedSubAreaName, setLastSelectedSubAreaName] = useState<string | null>(null);
-    const [showSideComponent1, setShowSideComponent1] = useState(false);
+    const [showSideComponent1, setShowSideComponent1] = useState(true);
     const [showSideComponent2, setShowSideComponent2] = useState(false);
 
     const mapOptions = {
@@ -82,28 +83,6 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel, isToggleOn }: Googl
         setMapApi(maps);
         setMapInstance(map);
     };
-
-    const handlePolygonClick = () => {
-        console.log("polygon click event enter");
-        if (currentLevel === 'subsubarea' && isToggleOn) {
-            console.log("polygon click");
-            setShowSideComponent1(true);
-        }
-    }
-
-    // const handleMapClick = () => {
-    //     console.log("mapclick");
-    //     if (currentLevel === 'subsubarea' && isToggleOn) {
-    //         setShowSideComponent1(true);
-    //         // setShowSideComponent2(true);
-    //     }
-    // }
-
-    // if (mapInstance) {
-    //     mapInstance.addListener('click', (event) => {
-    //         handleMapClick();
-    //     });
-    // }
 
     const drawSubareaPolygons = (districtName: string) => {
         if (!mapApi || !mapInstance || !subGeoData) return;
@@ -190,7 +169,6 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel, isToggleOn }: Googl
         if (mapInstance) {
             mapInstance.fitBounds(bounds);
         }
-        // mapInstance.fitBounds(bounds);
 
         setCurrentLevel('subsubarea');
 
@@ -218,6 +196,9 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel, isToggleOn }: Googl
                     console.log("clickclickclick");
                     console.log(currentLevelRef.current);
                     console.log(isToggleOnRef.current);
+                    if (currentLevelRef.current === 'subsubarea' && isToggleOnRef.current === true) {
+                        setShowSideComponent1(true);
+                    }
                     if (currentLevelRef.current == 'subsubarea') {
                         console.log("now");
                     }
@@ -451,8 +432,12 @@ const GoogleMapComponent = ({ currentLevel, setCurrentLevel, isToggleOn }: Googl
                     </>
                 )}
             </div>
-            {showSideComponent1 && <SideComponent1 isVisible={showSideComponent1} />}
-            {showSideComponent2 && <SideComponent2 isVisible={showSideComponent2} />}
+            {showSideComponent1 &&
+                <SideComponent1 isVisible={showSideComponent1} onClose={() => setShowSideComponent1(false)} >
+
+                </SideComponent1>
+            }
+            {showSideComponent2 && <SideComponent2 isVisible={showSideComponent2} onClose={() => setShowSideComponent2(false)} />}
         </div>
     );
 };

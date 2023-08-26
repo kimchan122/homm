@@ -1,0 +1,20 @@
+@import url('../styles/css/satoshi.css');
+
+.sideComponent1 {
+    position: 'fixed';
+    left: 0;
+    top: 70;
+    bottom: 0;
+    width: '350px';
+    background-color: '#f7f7f7';
+    z-index: 100;
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+    color: black;
+}
+
+.closeButton {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    font-size: 25px;
+}

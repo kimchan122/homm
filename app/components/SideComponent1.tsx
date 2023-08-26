@@ -1,18 +1,23 @@
 import React from 'react';
+import styles from './SideComponent1.module.css';
+import { CrossSVG } from '@ensdomains/thorin';
 
 interface SideComponent1Props {
     isVisible: boolean;
+    onClose: () => void;
     children?: React.ReactNode;
 }
 
-const SideComponent1: React.FC<SideComponent1Props> = ({ isVisible, children }) => {
+const SideComponent1 = ({ isVisible, onClose, children }: SideComponent1Props) => {
+
     if (!isVisible) return null;
 
     return (
-        <div style={{ position: 'fixed', left: 0, top: 0, bottom: 0, width: '250px', backgroundColor: '#f7f7f7' }}>
+        <div className={styles.sideComponent1}>
             {children}
+            <button className={styles.closeButton} onClick={onClose}><CrossSVG /></button>
             SideComponent1
-        </div>
+        </div >
     );
 }
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Header.module.css';
-import { Toggle, Button } from '@ensdomains/thorin';
-import { Tooltip, TooltipProps } from '@ensdomains/thorin';
-import dynamic from 'next/dynamic';
+import { Toggle, Button, Profile, mq } from '@ensdomains/thorin';
+import { ConnectButton } from './ConnectButton';
+import { Container, Layout } from '@/components/templates';
 
 interface HeaderProps {
     isToggleOn: boolean;
@@ -13,15 +13,6 @@ interface HeaderProps {
 const Header = ({ isToggleOn, onToggle, currentLevel }: HeaderProps) => {
 
     const [toastState, setToastState] = useState(false);
-    const [isToastVisible, setIsToastVisible] = useState(false);
-
-    const Dropdown = dynamic(() => import('@ensdomains/thorin').then(mod => mod.Dropdown), {
-        ssr: false
-    });
-
-    const Toast = dynamic(() => import('@ensdomains/thorin').then(mod => mod.Dropdown), {
-        ssr: false
-    });
 
     const getButtonColorClass = () => {
         if (currentLevel === 'subsubarea' && isToggleOn === true) {
@@ -50,25 +41,11 @@ const Header = ({ isToggleOn, onToggle, currentLevel }: HeaderProps) => {
                     />
                 </div>
                 : null}
-
-            <div style={{ zIndex: 2000 }}>
-                {/* <Dropdown
-                    align="left"
-                    items={[
-                        {
-                            label: 'Dashboard',
-                            onClick: () => null,
-                            color: 'text'
-                        },
-                        {
-                            label: 'Disconnect',
-                            onClick: () => null,
-                            color: 'red'
-                        },
-                    ]}
-                    label="Account"
-                /> */}
-            </div>
+            <Layout>
+                <Container>
+                    <ConnectButton />
+                </Container>
+            </Layout>
         </header >
     );
 }
