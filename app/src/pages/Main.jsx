@@ -31,7 +31,7 @@ const tooltipStyles = {
     fontFamily: "Satoshi-Bold"
 };
 
-const Main = ({ currentLevel, setCurrentLevel, isToggleOn }) => {
+const Main = ({ currentLevel, setCurrentLevel, isToggleOn, accountAddress }) => {
 
     const currentLevelRef = useRef(currentLevel);
     const isToggleOnRef = useRef(isToggleOn);
@@ -414,8 +414,12 @@ const Main = ({ currentLevel, setCurrentLevel, isToggleOn }) => {
                 )}
             </div>
             {showSideComponent1 &&
-                <SideComponent1 isVisible={showSideComponent1} onClose={() => setShowSideComponent1(false)} >
-
+                <SideComponent1
+                    isVisible={showSideComponent1}
+                    onClose={() => setShowSideComponent1(false)}
+                    currentLevel={currentLevel}
+                    isToggleOn={isToggleOn}
+                >
                 </SideComponent1>
             }
             {showSideComponent2 && <SideComponent2 isVisible={showSideComponent2} onClose={() => setShowSideComponent2(false)} />}

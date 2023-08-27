@@ -2,7 +2,9 @@ import { Button, Profile, mq } from '@ensdomains/thorin';
 import { ConnectButton as ConnectButtonBase } from '@rainbow-me/rainbowkit';
 import { useDisconnect } from 'wagmi';
 import styled, { css } from 'styled-components';
-import { getUser } from '../contracts/hommContract';
+import { getUser, callSignUpUser } from '../contracts/hommContract';
+import { useEffect } from 'react';
+import web3 from 'web3';
 
 const StyledButton = styled(Button)`
   ${({ theme }) => css`
@@ -14,12 +16,18 @@ const StyledButton = styled(Button)`
   `}
 `
 
-export function ConnectButton() {
+export function ConnectButton({ accountAddress }) {
     const { disconnect } = useDisconnect();
 
     const handleConnectButtonClick = async (address) => {
         const result = await getUser(address);
         console.log('getUser result:', result);
+
+        if (result === false) {
+            const result2 = await callSignUpUser(address);
+            // const result2 = await callSignUpUser();
+            console.log(result2);
+        }
     };
 
     return (
@@ -34,6 +42,8 @@ export function ConnectButton() {
             }) => {
                 const ready = mounted;
                 const connected = ready && account && chain;
+
+                console.log(connected);
 
                 return (
                     <div

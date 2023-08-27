@@ -169,13 +169,6 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "signUpUser",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
         "inputs": [
             {
                 "internalType": "uint256",
@@ -398,28 +391,9 @@
                         "type": "address"
                     }
                 ],
-                "internalType": "struct HommPlatform.Theme",
+                "internalType": "struct HommContract.Theme",
                 "name": "",
                 "type": "tuple"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "_address",
-                "type": "address"
-            }
-        ],
-        "name": "getUser",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
             }
         ],
         "stateMutability": "view",

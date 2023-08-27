@@ -4,7 +4,7 @@ import { Toggle, Button, Profile, mq } from '@ensdomains/thorin';
 import { useEnsAvatar, useEnsName } from 'wagmi'
 import { ConnectButton } from './ConnectButton';
 
-const Header = ({ isToggleOn, onToggle, currentLevel }) => {
+const Header = ({ isToggleOn, onToggle, currentLevel, accountAddress }) => {
 
     const [toastState, setToastState] = useState(false);
 
@@ -41,7 +41,7 @@ const Header = ({ isToggleOn, onToggle, currentLevel }) => {
                 : null}
 
             <div className='ensConnectButton'>
-                <ConnectButton />
+                <ConnectButton accountAddress={accountAddress} />
             </div>
         </header >
     );
